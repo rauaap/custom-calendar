@@ -94,9 +94,14 @@ public final class CustomCalendarWidgetProvider extends AppWidgetProvider {
             serviceIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
             serviceIntent.setData(Uri.parse("customcalendar://widget/" + appWidgetId));
             views.setRemoteAdapter(R.id.widget_list, serviceIntent);
-            views.setEmptyView(R.id.widget_list, R.id.widget_empty);
             views.setViewVisibility(R.id.widget_list, View.VISIBLE);
-            views.setTextViewText(R.id.widget_empty, context.getString(R.string.widget_empty_text));
+            views.setEmptyView(R.id.widget_list, R.id.widget_empty);
+            // Blanking the text is what hides the empty state, not setViewVisibility(GONE): the host
+            // reapplies these actions onto the live view hierarchy, where the ListView still holds
+            // the empty-view association from the previous update, and AdapterView.updateEmptyStatus()
+            // then forces the view back to VISIBLE after our action has run.
+            views.setTextViewText(R.id.widget_empty,
+                    settings.showEmptyText ? context.getString(R.string.widget_empty_text) : "");
 
             // Row clicks: template intent must leave data unset so each row's fill-in intent supplies it.
             // That makes it implicit, which needs FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT alongside FLAG_MUTABLE
@@ -115,7 +120,10 @@ public final class CustomCalendarWidgetProvider extends AppWidgetProvider {
                     openCalendarIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             views.setOnClickPendingIntent(R.id.widget_root, openCalendarPendingIntent);
         } else {
+            // Shown regardless of the empty-text setting: it is the only affordance for
+            // granting access once the widget is on the home screen.
             views.setViewVisibility(R.id.widget_list, View.GONE);
+            views.setViewVisibility(R.id.widget_empty, View.VISIBLE);
             views.setTextViewText(R.id.widget_empty, context.getString(R.string.widget_permission_needed_text));
 
             Intent configIntent = new Intent(context, WidgetConfigureActivity.class);

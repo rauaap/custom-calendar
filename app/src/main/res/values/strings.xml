@@ -10,6 +10,7 @@
     <string name="label_date_color">Date &amp; text color</string>
     <string name="label_background_color">Widget background</string>
     <string name="use_calendar_color">Use calendar color</string>
+    <string name="label_show_empty_text">Show \"No upcoming events\" when empty</string>
     <string name="label_font_size">Font size</string>
     <string name="label_event_format">Event format</string>
     <string name="format_helper_text">Format specifiers (in the style of Linux date(1)):\n\n%E   event name\n%Y   year, 4 digits (2026)\n%y   year, 2 digits (26)\n%m   month, 2 digits (07)\n%B   month name (July)\n%b   month name, short (Jul)\n%d   day of month, 2 digits (26)\n%e   day of month, space-padded ( 5)\n%A   weekday name (Sunday)\n%a   weekday name, short (Sun)\n%j   day of year, 3 digits (207)\n%H   hour, 24h, 2 digits (14)\n%I   hour, 12h, 2 digits (02)\n%M   minute, 2 digits (05)\n%p   AM or PM\n%%   a literal % character\n\\n   line break\n\\\\   a literal backslash\n\nAnything else is kept as-is, so you can mix in your own punctuation and words, e.g. \"%E — %A %d %B, %H:%M\".</string>

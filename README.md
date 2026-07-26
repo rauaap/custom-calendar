@@ -34,6 +34,7 @@ event, so you can see the result before saving.
 | **Date & text color** | Color of everything that is *not* `%E`: date output, literal text, punctuation. |
 | Date & text → **Use calendar color** | Same as above, for the non-name part of the line. |
 | **Widget background** | Fill behind the event list. Alpha is supported, so a translucent or fully transparent background works. |
+| **Show "No upcoming events" when empty** | Off leaves the widget blank when there is nothing to show. The "Tap to grant calendar access" message is unaffected — it appears either way. |
 | **Font size** | 10–28 sp. Also scales the vertical padding between rows, so larger text stays readable rather than cramped. |
 | **Event format** | The per-event format string — see below. |
 
@@ -98,7 +99,8 @@ than the rest.
   time zone.
 - Tapping a row opens that event in the calendar app; tapping the widget
   background opens the calendar at today.
-- With no upcoming events, the widget shows "No upcoming events".
+- With no upcoming events, the widget shows "No upcoming events", unless that
+  message is switched off in the settings.
 - The list refreshes whenever the calendar provider changes (via a
   content-trigger job), rather than waiting out the ~30 minute floor Android
   imposes on widget update intervals.

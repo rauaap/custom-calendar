@@ -39,6 +39,7 @@ public final class WidgetConfigureActivity extends Activity {
     private String format;
     private boolean useCalendarColorForName;
     private boolean useCalendarColorForDate;
+    private boolean showEmptyText;
 
     private FrameLayout previewContainer;
     private TextView previewText;
@@ -49,6 +50,7 @@ public final class WidgetConfigureActivity extends Activity {
     private ColorSwatchView backgroundSwatch;
     private CheckBox nameCalendarColorCheckbox;
     private CheckBox dateCalendarColorCheckbox;
+    private CheckBox showEmptyTextCheckbox;
     private SeekBar fontSeekBar;
     private TextView fontSizeValue;
     private EditText formatEdit;
@@ -84,6 +86,7 @@ public final class WidgetConfigureActivity extends Activity {
         backgroundSwatch = findViewById(R.id.swatch_background_color);
         nameCalendarColorCheckbox = findViewById(R.id.checkbox_name_calendar_color);
         dateCalendarColorCheckbox = findViewById(R.id.checkbox_date_calendar_color);
+        showEmptyTextCheckbox = findViewById(R.id.checkbox_show_empty_text);
         fontSeekBar = findViewById(R.id.seekbar_font_size);
         fontSizeValue = findViewById(R.id.text_font_size_value);
         formatEdit = findViewById(R.id.edit_format);
@@ -97,6 +100,7 @@ public final class WidgetConfigureActivity extends Activity {
         format = settings.format;
         useCalendarColorForName = settings.useCalendarColorForName;
         useCalendarColorForDate = settings.useCalendarColorForDate;
+        showEmptyText = settings.showEmptyText;
 
         nameSwatch.setColor(nameColor);
         dateSwatch.setColor(dateColor);
@@ -105,6 +109,7 @@ public final class WidgetConfigureActivity extends Activity {
         formatEdit.setText(format);
         nameCalendarColorCheckbox.setChecked(useCalendarColorForName);
         dateCalendarColorCheckbox.setChecked(useCalendarColorForDate);
+        showEmptyTextCheckbox.setChecked(showEmptyText);
         setSwatchEnabled(nameSwatch, !useCalendarColorForName);
         setSwatchEnabled(dateSwatch, !useCalendarColorForDate);
 
@@ -132,6 +137,8 @@ public final class WidgetConfigureActivity extends Activity {
             useCalendarColorForDate = checked;
             setSwatchEnabled(dateSwatch, !checked);
         });
+
+        showEmptyTextCheckbox.setOnCheckedChangeListener((buttonView, checked) -> showEmptyText = checked);
 
         fontSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -226,7 +233,7 @@ public final class WidgetConfigureActivity extends Activity {
     private void onSaveClicked() {
         WidgetPrefs.Settings toSave = new WidgetPrefs.Settings(nameColor, dateColor, backgroundColor, fontSizeSp,
                 format == null || format.isEmpty() ? WidgetPrefs.DEFAULT_FORMAT : format,
-                useCalendarColorForName, useCalendarColorForDate);
+                useCalendarColorForName, useCalendarColorForDate, showEmptyText);
         WidgetPrefs.save(this, appWidgetId, toSave);
 
         // Deliberately not calling AppWidgetManager.updateAppWidget() from here: updates sent

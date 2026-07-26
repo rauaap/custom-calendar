@@ -14,6 +14,7 @@ public final class WidgetPrefs {
     public static final float DEFAULT_FONT_SIZE_SP = 14f;
     public static final String DEFAULT_FORMAT = "%E — %A %d %B, %H:%M";
     public static final boolean DEFAULT_USE_CALENDAR_COLOR = false;
+    public static final boolean DEFAULT_SHOW_EMPTY_TEXT = true;
 
     private WidgetPrefs() {
     }
@@ -26,9 +27,11 @@ public final class WidgetPrefs {
         public final String format;
         public final boolean useCalendarColorForName;
         public final boolean useCalendarColorForDate;
+        public final boolean showEmptyText;
 
         public Settings(int nameColor, int dateColor, int backgroundColor, float fontSizeSp, String format,
-                         boolean useCalendarColorForName, boolean useCalendarColorForDate) {
+                         boolean useCalendarColorForName, boolean useCalendarColorForDate,
+                         boolean showEmptyText) {
             this.nameColor = nameColor;
             this.dateColor = dateColor;
             this.backgroundColor = backgroundColor;
@@ -36,11 +39,13 @@ public final class WidgetPrefs {
             this.format = format;
             this.useCalendarColorForName = useCalendarColorForName;
             this.useCalendarColorForDate = useCalendarColorForDate;
+            this.showEmptyText = showEmptyText;
         }
 
         public static Settings defaults() {
             return new Settings(DEFAULT_NAME_COLOR, DEFAULT_DATE_COLOR, DEFAULT_BACKGROUND_COLOR,
-                    DEFAULT_FONT_SIZE_SP, DEFAULT_FORMAT, DEFAULT_USE_CALENDAR_COLOR, DEFAULT_USE_CALENDAR_COLOR);
+                    DEFAULT_FONT_SIZE_SP, DEFAULT_FORMAT, DEFAULT_USE_CALENDAR_COLOR, DEFAULT_USE_CALENDAR_COLOR,
+                    DEFAULT_SHOW_EMPTY_TEXT);
         }
     }
 
@@ -58,7 +63,8 @@ public final class WidgetPrefs {
                 p.getFloat(key("fontSize", appWidgetId), d.fontSizeSp),
                 p.getString(key("format", appWidgetId), d.format),
                 p.getBoolean(key("useCalColorName", appWidgetId), d.useCalendarColorForName),
-                p.getBoolean(key("useCalColorDate", appWidgetId), d.useCalendarColorForDate));
+                p.getBoolean(key("useCalColorDate", appWidgetId), d.useCalendarColorForDate),
+                p.getBoolean(key("showEmptyText", appWidgetId), d.showEmptyText));
     }
 
     public static void save(Context context, int appWidgetId, Settings settings) {
@@ -70,6 +76,7 @@ public final class WidgetPrefs {
                 .putString(key("format", appWidgetId), settings.format)
                 .putBoolean(key("useCalColorName", appWidgetId), settings.useCalendarColorForName)
                 .putBoolean(key("useCalColorDate", appWidgetId), settings.useCalendarColorForDate)
+                .putBoolean(key("showEmptyText", appWidgetId), settings.showEmptyText)
                 .apply();
     }
 
@@ -82,6 +89,7 @@ public final class WidgetPrefs {
                 .remove(key("format", appWidgetId))
                 .remove(key("useCalColorName", appWidgetId))
                 .remove(key("useCalColorDate", appWidgetId))
+                .remove(key("showEmptyText", appWidgetId))
                 .apply();
     }
 
