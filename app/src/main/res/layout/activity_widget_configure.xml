@@ -110,6 +110,54 @@
                 android:layout_height="40dp" />
         </LinearLayout>
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/label_lookahead_days" />
+
+            <EditText
+                android:id="@+id/edit_lookahead_days"
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:maxLength="3"
+                android:gravity="end"
+                android:hint="@string/hint_lookahead_days"
+                android:imeOptions="actionDone" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/label_max_events" />
+
+            <EditText
+                android:id="@+id/edit_max_events"
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:maxLength="3"
+                android:gravity="end"
+                android:hint="@string/hint_max_events"
+                android:imeOptions="actionDone" />
+        </LinearLayout>
+
         <CheckBox
             android:id="@+id/checkbox_show_empty_text"
             android:layout_width="match_parent"

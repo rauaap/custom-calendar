@@ -41,7 +41,7 @@ public final class EventRemoteViewsFactory implements RemoteViewsService.RemoteV
     private void loadData() {
         settings = WidgetPrefs.load(context, appWidgetId);
         events = CalendarEventRepository.hasPermission(context)
-                ? CalendarEventRepository.loadUpcomingEvents(context)
+                ? CalendarEventRepository.loadUpcomingEvents(context, settings.lookaheadDays, settings.maxEvents)
                 : new ArrayList<>();
     }
 

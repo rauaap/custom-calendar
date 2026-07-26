@@ -34,6 +34,8 @@ event, so you can see the result before saving.
 | **Date & text color** | Color of everything that is *not* `%E`: date output, literal text, punctuation. |
 | Date & text → **Use calendar color** | Same as above, for the non-name part of the line. |
 | **Widget background** | Fill behind the event list. Alpha is supported, so a translucent or fully transparent background works. |
+| **Days to look ahead** | How far into the future events are pulled, 1–365 days (default 14). |
+| **Maximum events shown** | Row cap, 1–100 (default 20). The list scrolls, so more rows than fit is fine. |
 | **Show "No upcoming events" when empty** | Off leaves the widget blank when there is nothing to show. The "Tap to grant calendar access" message is unaffected — it appears either way. |
 | **Font size** | 10–28 sp. Also scales the vertical padding between rows, so larger text stays readable rather than cramped. |
 | **Event format** | The per-event format string — see below. |
@@ -41,6 +43,9 @@ event, so you can see the result before saving.
 Tapping any color swatch opens an HSV picker with a saturation/value square, a
 hue slider, an alpha slider with an opacity percentage, and a hex field that
 stays in sync with the sliders (`RRGGBB`, or `RRGGBBAA` to include opacity).
+
+The two numeric fields are clamped to the ranges above when you save; an empty
+or non-numeric value falls back to the default.
 
 Settings are stored per widget id and are deleted when that widget is removed
 from the home screen.
@@ -93,8 +98,9 @@ than the rest.
 
 ## What the widget shows
 
-- Events starting within the next 14 days, across all calendars on the device,
-  earliest first, capped at 20 rows.
+- Events starting within the configured lookahead window (14 days by default),
+  across all calendars on the device, earliest first, capped at the configured
+  row limit (20 by default).
 - All-day events are rendered in UTC so their date is not shifted by the local
   time zone.
 - Tapping a row opens that event in the calendar app; tapping the widget

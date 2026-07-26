@@ -17,9 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 public final class CalendarEventRepository {
 
-    private static final int LOOKAHEAD_DAYS = 14;
-    private static final int MAX_EVENTS = 20;
-
     private CalendarEventRepository() {
     }
 
@@ -28,14 +25,14 @@ public final class CalendarEventRepository {
                 == PackageManager.PERMISSION_GRANTED;
     }
 
-    public static List<EventItem> loadUpcomingEvents(Context context) {
+    public static List<EventItem> loadUpcomingEvents(Context context, int lookaheadDays, int maxEvents) {
         List<EventItem> events = new ArrayList<>();
         if (!hasPermission(context)) {
             return events;
         }
 
         long now = System.currentTimeMillis();
-        long rangeEnd = now + TimeUnit.DAYS.toMillis(LOOKAHEAD_DAYS);
+        long rangeEnd = now + TimeUnit.DAYS.toMillis(lookaheadDays);
 
         Uri uri = CalendarContract.Instances.CONTENT_URI.buildUpon()
                 .appendPath(String.valueOf(now))
@@ -64,7 +61,7 @@ public final class CalendarEventRepository {
             int allDayIdx = cursor.getColumnIndex(CalendarContract.Instances.ALL_DAY);
             int displayColorIdx = cursor.getColumnIndex(CalendarContract.Instances.DISPLAY_COLOR);
 
-            while (cursor.moveToNext() && events.size() < MAX_EVENTS) {
+            while (cursor.moveToNext() && events.size() < maxEvents) {
                 long eventId = cursor.getLong(idIdx);
                 String title = cursor.getString(titleIdx);
                 long begin = cursor.getLong(beginIdx);

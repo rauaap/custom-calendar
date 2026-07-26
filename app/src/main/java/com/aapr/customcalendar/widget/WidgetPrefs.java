@@ -15,8 +15,26 @@ public final class WidgetPrefs {
     public static final String DEFAULT_FORMAT = "%E — %A %d %B, %H:%M";
     public static final boolean DEFAULT_USE_CALENDAR_COLOR = false;
     public static final boolean DEFAULT_SHOW_EMPTY_TEXT = true;
+    public static final int DEFAULT_LOOKAHEAD_DAYS = 14;
+    public static final int DEFAULT_MAX_EVENTS = 20;
+
+    public static final int MIN_LOOKAHEAD_DAYS = 1;
+    public static final int MAX_LOOKAHEAD_DAYS = 365;
+    public static final int MIN_MAX_EVENTS = 1;
+    public static final int MAX_MAX_EVENTS = 100;
 
     private WidgetPrefs() {
+    }
+
+    /** Parses user input, falling back to {@code fallback} when it is empty or not a number. */
+    public static int clampCount(String input, int min, int max, int fallback) {
+        int value;
+        try {
+            value = Integer.parseInt(input.trim());
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
+        return Math.max(min, Math.min(max, value));
     }
 
     public static final class Settings {
@@ -28,10 +46,12 @@ public final class WidgetPrefs {
         public final boolean useCalendarColorForName;
         public final boolean useCalendarColorForDate;
         public final boolean showEmptyText;
+        public final int lookaheadDays;
+        public final int maxEvents;
 
         public Settings(int nameColor, int dateColor, int backgroundColor, float fontSizeSp, String format,
                          boolean useCalendarColorForName, boolean useCalendarColorForDate,
-                         boolean showEmptyText) {
+                         boolean showEmptyText, int lookaheadDays, int maxEvents) {
             this.nameColor = nameColor;
             this.dateColor = dateColor;
             this.backgroundColor = backgroundColor;
@@ -40,12 +60,14 @@ public final class WidgetPrefs {
             this.useCalendarColorForName = useCalendarColorForName;
             this.useCalendarColorForDate = useCalendarColorForDate;
             this.showEmptyText = showEmptyText;
+            this.lookaheadDays = lookaheadDays;
+            this.maxEvents = maxEvents;
         }
 
         public static Settings defaults() {
             return new Settings(DEFAULT_NAME_COLOR, DEFAULT_DATE_COLOR, DEFAULT_BACKGROUND_COLOR,
                     DEFAULT_FONT_SIZE_SP, DEFAULT_FORMAT, DEFAULT_USE_CALENDAR_COLOR, DEFAULT_USE_CALENDAR_COLOR,
-                    DEFAULT_SHOW_EMPTY_TEXT);
+                    DEFAULT_SHOW_EMPTY_TEXT, DEFAULT_LOOKAHEAD_DAYS, DEFAULT_MAX_EVENTS);
         }
     }
 
@@ -64,7 +86,9 @@ public final class WidgetPrefs {
                 p.getString(key("format", appWidgetId), d.format),
                 p.getBoolean(key("useCalColorName", appWidgetId), d.useCalendarColorForName),
                 p.getBoolean(key("useCalColorDate", appWidgetId), d.useCalendarColorForDate),
-                p.getBoolean(key("showEmptyText", appWidgetId), d.showEmptyText));
+                p.getBoolean(key("showEmptyText", appWidgetId), d.showEmptyText),
+                p.getInt(key("lookaheadDays", appWidgetId), d.lookaheadDays),
+                p.getInt(key("maxEvents", appWidgetId), d.maxEvents));
     }
 
     public static void save(Context context, int appWidgetId, Settings settings) {
@@ -77,6 +101,8 @@ public final class WidgetPrefs {
                 .putBoolean(key("useCalColorName", appWidgetId), settings.useCalendarColorForName)
                 .putBoolean(key("useCalColorDate", appWidgetId), settings.useCalendarColorForDate)
                 .putBoolean(key("showEmptyText", appWidgetId), settings.showEmptyText)
+                .putInt(key("lookaheadDays", appWidgetId), settings.lookaheadDays)
+                .putInt(key("maxEvents", appWidgetId), settings.maxEvents)
                 .apply();
     }
 
@@ -90,6 +116,8 @@ public final class WidgetPrefs {
                 .remove(key("useCalColorName", appWidgetId))
                 .remove(key("useCalColorDate", appWidgetId))
                 .remove(key("showEmptyText", appWidgetId))
+                .remove(key("lookaheadDays", appWidgetId))
+                .remove(key("maxEvents", appWidgetId))
                 .apply();
     }
 

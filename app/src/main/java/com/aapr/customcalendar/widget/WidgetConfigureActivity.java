@@ -54,6 +54,8 @@ public final class WidgetConfigureActivity extends Activity {
     private SeekBar fontSeekBar;
     private TextView fontSizeValue;
     private EditText formatEdit;
+    private EditText lookaheadDaysEdit;
+    private EditText maxEventsEdit;
     private Button saveButton;
 
     @Override
@@ -90,6 +92,8 @@ public final class WidgetConfigureActivity extends Activity {
         fontSeekBar = findViewById(R.id.seekbar_font_size);
         fontSizeValue = findViewById(R.id.text_font_size_value);
         formatEdit = findViewById(R.id.edit_format);
+        lookaheadDaysEdit = findViewById(R.id.edit_lookahead_days);
+        maxEventsEdit = findViewById(R.id.edit_max_events);
         saveButton = findViewById(R.id.button_save);
 
         WidgetPrefs.Settings settings = WidgetPrefs.load(this, appWidgetId);
@@ -107,6 +111,8 @@ public final class WidgetConfigureActivity extends Activity {
         backgroundSwatch.setColor(backgroundColor);
         fontSeekBar.setProgress(clampProgress(Math.round(fontSizeSp) - MIN_FONT_SP));
         formatEdit.setText(format);
+        lookaheadDaysEdit.setText(String.valueOf(settings.lookaheadDays));
+        maxEventsEdit.setText(String.valueOf(settings.maxEvents));
         nameCalendarColorCheckbox.setChecked(useCalendarColorForName);
         dateCalendarColorCheckbox.setChecked(useCalendarColorForDate);
         showEmptyTextCheckbox.setChecked(showEmptyText);
@@ -231,9 +237,14 @@ public final class WidgetConfigureActivity extends Activity {
     }
 
     private void onSaveClicked() {
+        int lookaheadDays = WidgetPrefs.clampCount(lookaheadDaysEdit.getText().toString(),
+                WidgetPrefs.MIN_LOOKAHEAD_DAYS, WidgetPrefs.MAX_LOOKAHEAD_DAYS, WidgetPrefs.DEFAULT_LOOKAHEAD_DAYS);
+        int maxEvents = WidgetPrefs.clampCount(maxEventsEdit.getText().toString(),
+                WidgetPrefs.MIN_MAX_EVENTS, WidgetPrefs.MAX_MAX_EVENTS, WidgetPrefs.DEFAULT_MAX_EVENTS);
+
         WidgetPrefs.Settings toSave = new WidgetPrefs.Settings(nameColor, dateColor, backgroundColor, fontSizeSp,
                 format == null || format.isEmpty() ? WidgetPrefs.DEFAULT_FORMAT : format,
-                useCalendarColorForName, useCalendarColorForDate, showEmptyText);
+                useCalendarColorForName, useCalendarColorForDate, showEmptyText, lookaheadDays, maxEvents);
         WidgetPrefs.save(this, appWidgetId, toSave);
 
         // Deliberately not calling AppWidgetManager.updateAppWidget() from here: updates sent
