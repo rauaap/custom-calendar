@@ -113,8 +113,14 @@ public final class CustomCalendarWidgetProvider extends AppWidgetProvider {
             views.setPendingIntentTemplate(R.id.widget_list, rowTemplatePendingIntent);
 
             // Tapping the widget background (or the empty state) opens Calendar to today.
+            // The /time path with an explicit time/epoch type is what calendar apps actually
+            // declare a filter for. The bare authority URI resolves to no MIME type at all, which
+            // hands the intent to any app with a broad "scheme=content" VIEW filter — on a device
+            // with one of those installed it silently opens something unrelated. Leaving the time
+            // off the path means "now", so this cannot go stale between renders.
             Intent openCalendarIntent = new Intent(Intent.ACTION_VIEW)
-                    .setData(CalendarContract.CONTENT_URI)
+                    .setDataAndType(CalendarContract.CONTENT_URI.buildUpon().appendPath("time").build(),
+                            "time/epoch")
                     .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             PendingIntent openCalendarPendingIntent = PendingIntent.getActivity(context, appWidgetId,
                     openCalendarIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
