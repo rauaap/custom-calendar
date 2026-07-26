@@ -1,0 +1,20 @@
+<resources>
+    <array name="widget_color_presets">
+        <item>#FFFFFFFF</item>
+        <item>#FF000000</item>
+        <item>#FFCCCCCC</item>
+        <item>#FF00A676</item>
+        <item>#FFE53935</item>
+        <item>#FFFB8C00</item>
+        <item>#FFFDD835</item>
+        <item>#FF43A047</item>
+        <item>#FF1E88E5</item>
+        <item>#FF3949AB</item>
+        <item>#FF8E24AA</item>
+        <item>#FFD81B60</item>
+        <item>#FF6D4C41</item>
+        <item>#CC000000</item>
+        <item>#CCFFFFFF</item>
+        <item>#00000000</item>
+    </array>
+</resources>

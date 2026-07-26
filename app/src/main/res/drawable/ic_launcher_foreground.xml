@@ -4,23 +4,20 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- White placeholder circle (within the adaptive-icon safe zone) -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M24,54 a30,30 0 1,0 60,0 a30,30 0 1,0 -60,0 z" />
+    <!-- Calendar mark, using the same accent palette as agent-ui-android's icon. -->
 
-    <!-- Placeholder letter "A" drawn as strokes -->
+    <!-- Calendar body. -->
     <path
-        android:strokeColor="#37474F"
-        android:strokeWidth="5"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:fillColor="#00000000"
-        android:pathData="M46,68 L54,40 L62,68" />
+        android:fillColor="#D97757"
+        android:pathData="M38,30 L70,30 A12,12 0 0,1 82,42 L82,72 A12,12 0 0,1 70,84 L38,84 A12,12 0 0,1 26,72 L26,42 A12,12 0 0,1 38,30 Z" />
+
+    <!-- Header band, a darker terracotta (agent-ui-android's accent_press). -->
     <path
-        android:strokeColor="#37474F"
-        android:strokeWidth="5"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:pathData="M49,58 L59,58" />
+        android:fillColor="#C25F3F"
+        android:pathData="M38,30 L70,30 A12,12 0 0,1 82,42 L82,44 L26,44 L26,42 A12,12 0 0,1 38,30 Z" />
+
+    <!-- Highlighted "today" marker. -->
+    <path
+        android:fillColor="#ECE8F0"
+        android:pathData="M65,58 a7,7 0 1,0 0.001,0 z" />
 </vector>

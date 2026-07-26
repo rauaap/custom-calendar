@@ -1,6 +1,6 @@
-IMAGE ?= android-builder
+IMAGE ?= custom-calendar-builder
 PODMAN ?= podman
-GRADLE_CACHE ?= android-gradle-cache
+GRADLE_CACHE ?= custom-calendar-gradle-cache
 
 RUN_ANDROID = $(PODMAN) run --rm --userns=keep-id \
 	-e HOME=/gradle-cache \
