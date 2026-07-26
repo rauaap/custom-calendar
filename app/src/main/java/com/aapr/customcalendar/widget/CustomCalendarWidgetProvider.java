@@ -3,6 +3,7 @@ package com.aapr.customcalendar.widget;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -15,12 +16,12 @@ import com.aapr.customcalendar.R;
 public final class CustomCalendarWidgetProvider extends AppWidgetProvider {
 
     /** Sent explicitly to this component only; see {@link #requestRefresh}. */
-    private static final String ACTION_REFRESH_WIDGETS = "com.aapr.customcalendar.action.REFRESH_WIDGETS";
+    static final String ACTION_REFRESH_WIDGETS = "com.aapr.customcalendar.action.REFRESH_WIDGETS";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         for (int appWidgetId : appWidgetIds) {
-            updateWidget(context, appWidgetManager, appWidgetId);
+            refresh(context, appWidgetManager, appWidgetId);
         }
         // Re-registers in case a device reboot cleared the (unpersisted) content-trigger job.
         CalendarChangeJobService.schedule(context);
@@ -40,29 +41,44 @@ public final class CustomCalendarWidgetProvider extends AppWidgetProvider {
     public void onDeleted(Context context, int[] appWidgetIds) {
         for (int appWidgetId : appWidgetIds) {
             WidgetPrefs.remove(context, appWidgetId);
+            EventExpiryAlarm.cancel(context, appWidgetId);
         }
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (ACTION_REFRESH_WIDGETS.equals(intent.getAction())) {
+        String action = intent.getAction();
+        // A clock or time zone change moves every event relative to "now", so the list on screen
+        // (and the expiry alarm computed from it) is stale the moment it happens.
+        if (ACTION_REFRESH_WIDGETS.equals(action)
+                || Intent.ACTION_TIME_CHANGED.equals(action)
+                || Intent.ACTION_TIMEZONE_CHANGED.equals(action)) {
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             int[] appWidgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
-            if (appWidgetIds != null) {
-                for (int appWidgetId : appWidgetIds) {
-                    // The list's row views are cached by the adapter independently of the top-level
-                    // widget RemoteViews — background/etc. below refresh with updateWidget(), but
-                    // name/date color, font size, and padding live in per-row views that only
-                    // re-render in response to this call. It has to come first: issued after
-                    // updateWidget() it supersedes the still-pending RemoteViews update, and the
-                    // new top-level views never reach the host.
-                    appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_list);
-                    updateWidget(context, appWidgetManager, appWidgetId);
-                }
+            if (appWidgetIds == null) {
+                appWidgetIds = appWidgetManager.getAppWidgetIds(
+                        new ComponentName(context, CustomCalendarWidgetProvider.class));
+            }
+            for (int appWidgetId : appWidgetIds) {
+                refresh(context, appWidgetManager, appWidgetId);
             }
             return;
         }
         super.onReceive(context, intent);
+    }
+
+    /**
+     * Re-renders one widget, list contents included. The row views are cached by the adapter
+     * independently of the top-level widget RemoteViews: re-issuing those (with the same adapter
+     * intent) updates the background and click targets but leaves the host's existing adapter
+     * alone, so the rows — and the events behind them — only reload in response to
+     * notifyAppWidgetViewDataChanged(). That call also has to come first: issued after
+     * updateWidget() it supersedes the still-pending RemoteViews update, and the new top-level
+     * views never reach the host.
+     */
+    private static void refresh(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
+        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_list);
+        updateWidget(context, appWidgetManager, appWidgetId);
     }
 
     /**

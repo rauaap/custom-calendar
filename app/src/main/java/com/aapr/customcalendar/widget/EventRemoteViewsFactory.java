@@ -43,6 +43,9 @@ public final class EventRemoteViewsFactory implements RemoteViewsService.RemoteV
         events = CalendarEventRepository.hasPermission(context)
                 ? CalendarEventRepository.loadUpcomingEvents(context, settings.lookaheadDays, settings.maxEvents)
                 : new ArrayList<>();
+        // Every path that reloads the list ends up here, which makes this the one place that
+        // always knows when the list next goes stale on its own.
+        EventExpiryAlarm.schedule(context, appWidgetId, events);
     }
 
     @Override
