@@ -25,7 +25,8 @@ The widget can be resized freely in both directions.
 ## Customization options
 
 Everything is live-previewed at the top of the settings screen using a sample
-event, so you can see the result before saving.
+event (two, with the separate today format switched on), so you can see the
+result before saving.
 
 | Option | Effect |
 |--------|--------|
@@ -40,6 +41,8 @@ event, so you can see the result before saving.
 | **Show "No upcoming events" when empty** | Off leaves the widget blank when there is nothing to show. The "Tap to grant calendar access" message is unaffected — it appears either way. |
 | **Font size** | 10–28 sp. Also scales the vertical padding between rows, so larger text stays readable rather than cramped. |
 | **Event format** | The per-event format string — see below. |
+| **Use a separate format for today's events** | Off by default. On, events that start today are rendered with a second format string, and a today sample joins the preview. |
+| **Today's event format** | Only shown while the toggle above is on. The per-event format string used for today's events. |
 
 Tapping any color swatch opens an HSV picker with a saturation/value square, a
 hue slider, an alpha slider with an opacity percentage, and a hex field that
@@ -97,6 +100,23 @@ Each row is capped at the number of lines the format produces, and anything
 longer is ellipsized — so a very long event name cannot make one row taller
 than the rest.
 
+### Today's events
+
+Spelling out the weekday and date of an event a few hours away reads oddly, so
+events that start today can use a format of their own. The toggle is off by
+default; switching it on reveals a second format field with the same specifiers,
+defaulting to the default format with the date part replaced by the word it
+stands in for:
+
+```
+%E — Today, %H:%M
+```
+
+Nothing about the word is special — it is plain literal text, so translate it,
+drop it for `%H:%M` alone, or write something else entirely. Every event
+starting on the current date uses this format, all-day events included; every
+other event uses the main one.
+
 ## What the widget shows
 
 - Events starting within the configured lookahead window (14 days by default),
@@ -110,7 +130,9 @@ than the rest.
   message is switched off in the settings.
 - The list refreshes whenever the calendar provider changes (via a
   content-trigger job), rather than waiting out the ~30 minute floor Android
-  imposes on widget update intervals.
+  imposes on widget update intervals. It also refreshes when the earliest event
+  on screen ends and, with the today format enabled, shortly after midnight, so
+  that "today" keeps meaning the current date.
 
 ## Build
 

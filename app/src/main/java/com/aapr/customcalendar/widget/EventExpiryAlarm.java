@@ -7,12 +7,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * One alarm per widget, set for the moment the earliest event on screen ends — the first time
- * after now that the widget's query would return a different list.
+ * One alarm per widget, set for the next moment the rows on screen stop being correct: the
+ * earliest event end (after which the widget's query returns a different list) and, when the
+ * widget has a separate format for today's events, the coming midnight (after which a different
+ * set of events counts as "today").
  *
  * Nothing else re-queries the calendar as time alone passes: the content-trigger job only fires
  * on calendar edits, and re-issuing the top-level RemoteViews does not reload the list (the host
@@ -40,8 +44,12 @@ final class EventExpiryAlarm {
     private EventExpiryAlarm() {
     }
 
-    /** Arms the alarm for the earliest end time in {@code events}, or cancels it if there is none. */
-    static void schedule(Context context, int appWidgetId, List<EventItem> events) {
+    /**
+     * Arms the alarm for whichever comes first, the earliest end time in {@code events} or (when
+     * {@code refreshAtMidnight}) the start of the next day, or cancels it if there is neither.
+     */
+    static void schedule(Context context, int appWidgetId, List<EventItem> events,
+                         boolean refreshAtMidnight) {
         AlarmManager alarmManager = context.getSystemService(AlarmManager.class);
         if (alarmManager == null) {
             return;
@@ -49,14 +57,19 @@ final class EventExpiryAlarm {
         PendingIntent operation = refreshOperation(context, appWidgetId);
 
         long now = System.currentTimeMillis();
-        long earliestEnd = Long.MAX_VALUE;
+        long nextChange = Long.MAX_VALUE;
         for (EventItem event : events) {
             long end = event.getEnd().toInstant().toEpochMilli();
-            if (end > now && end < earliestEnd) {
-                earliestEnd = end;
+            if (end > now && end < nextChange) {
+                nextChange = end;
             }
         }
-        if (earliestEnd == Long.MAX_VALUE) {
+        // Only worth waking for with rows on screen: an empty list renders the same on either
+        // side of midnight, and no event enters the lookahead window merely by the date changing.
+        if (refreshAtMidnight && !events.isEmpty()) {
+            nextChange = Math.min(nextChange, nextMidnightMillis());
+        }
+        if (nextChange == Long.MAX_VALUE) {
             alarmManager.cancel(operation);
             return;
         }
@@ -64,8 +77,13 @@ final class EventExpiryAlarm {
         // RTC rather than RTC_WAKEUP: a widget nobody is looking at is not worth a wakeup, and a
         // non-wakeup alarm is delivered as soon as the device is next awake — i.e. by the time the
         // screen is on and the widget is visible again.
-        alarmManager.setWindow(AlarmManager.RTC, Math.max(earliestEnd, now + MIN_DELAY_MILLIS),
+        alarmManager.setWindow(AlarmManager.RTC, Math.max(nextChange, now + MIN_DELAY_MILLIS),
                 WINDOW_MILLIS, operation);
+    }
+
+    private static long nextMidnightMillis() {
+        ZoneId zone = ZoneId.systemDefault();
+        return LocalDate.now(zone).plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli();
     }
 
     static void cancel(Context context, int appWidgetId) {

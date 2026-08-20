@@ -12,10 +12,10 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -39,12 +39,15 @@ public final class WidgetConfigureActivity extends Activity {
     private int cornerRadiusDp;
     private float fontSizeSp;
     private String format;
+    private boolean useTodayFormat;
+    private String todayFormat;
     private boolean useCalendarColorForName;
     private boolean useCalendarColorForDate;
     private boolean showEmptyText;
 
-    private FrameLayout previewContainer;
+    private ViewGroup previewContainer;
     private TextView previewText;
+    private TextView previewTextToday;
     private TextView permissionBanner;
     private Button grantPermissionButton;
     private ColorSwatchView nameSwatch;
@@ -58,6 +61,9 @@ public final class WidgetConfigureActivity extends Activity {
     private SeekBar fontSeekBar;
     private TextView fontSizeValue;
     private EditText formatEdit;
+    private CheckBox useTodayFormatCheckbox;
+    private ViewGroup todayFormatGroup;
+    private EditText todayFormatEdit;
     private EditText lookaheadDaysEdit;
     private EditText maxEventsEdit;
     private Button saveButton;
@@ -85,6 +91,7 @@ public final class WidgetConfigureActivity extends Activity {
 
         previewContainer = findViewById(R.id.preview_container);
         previewText = findViewById(R.id.preview_text);
+        previewTextToday = findViewById(R.id.preview_text_today);
         permissionBanner = findViewById(R.id.text_permission_banner);
         grantPermissionButton = findViewById(R.id.button_grant_permission);
         nameSwatch = findViewById(R.id.swatch_name_color);
@@ -98,6 +105,9 @@ public final class WidgetConfigureActivity extends Activity {
         fontSeekBar = findViewById(R.id.seekbar_font_size);
         fontSizeValue = findViewById(R.id.text_font_size_value);
         formatEdit = findViewById(R.id.edit_format);
+        useTodayFormatCheckbox = findViewById(R.id.checkbox_use_today_format);
+        todayFormatGroup = findViewById(R.id.group_today_format);
+        todayFormatEdit = findViewById(R.id.edit_today_format);
         lookaheadDaysEdit = findViewById(R.id.edit_lookahead_days);
         maxEventsEdit = findViewById(R.id.edit_max_events);
         saveButton = findViewById(R.id.button_save);
@@ -109,6 +119,8 @@ public final class WidgetConfigureActivity extends Activity {
         cornerRadiusDp = settings.cornerRadiusDp;
         fontSizeSp = settings.fontSizeSp;
         format = settings.format;
+        useTodayFormat = settings.useTodayFormat;
+        todayFormat = settings.todayFormat;
         useCalendarColorForName = settings.useCalendarColorForName;
         useCalendarColorForDate = settings.useCalendarColorForDate;
         showEmptyText = settings.showEmptyText;
@@ -120,6 +132,9 @@ public final class WidgetConfigureActivity extends Activity {
         cornerRadiusSeekBar.setProgress(cornerRadiusDp);
         fontSeekBar.setProgress(clampProgress(Math.round(fontSizeSp) - MIN_FONT_SP));
         formatEdit.setText(format);
+        useTodayFormatCheckbox.setChecked(useTodayFormat);
+        todayFormatEdit.setText(todayFormat);
+        todayFormatGroup.setVisibility(useTodayFormat ? View.VISIBLE : View.GONE);
         lookaheadDaysEdit.setText(String.valueOf(settings.lookaheadDays));
         maxEventsEdit.setText(String.valueOf(settings.maxEvents));
         nameCalendarColorCheckbox.setChecked(useCalendarColorForName);
@@ -171,18 +186,24 @@ public final class WidgetConfigureActivity extends Activity {
             }
         });
 
-        formatEdit.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
+        formatEdit.addTextChangedListener(new EditListener() {
             @Override
             public void afterTextChanged(Editable s) {
                 format = s.toString();
+                updatePreview();
+            }
+        });
+
+        useTodayFormatCheckbox.setOnCheckedChangeListener((buttonView, checked) -> {
+            useTodayFormat = checked;
+            todayFormatGroup.setVisibility(checked ? View.VISIBLE : View.GONE);
+            updatePreview();
+        });
+
+        todayFormatEdit.addTextChangedListener(new EditListener() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                todayFormat = s.toString();
                 updatePreview();
             }
         });
@@ -235,13 +256,21 @@ public final class WidgetConfigureActivity extends Activity {
         previewContainer.setBackground(previewBackground);
         cornerRadiusValue.setText(cornerRadiusDp + "dp");
 
-        ZonedDateTime sample = ZonedDateTime.now().plusDays(1).withHour(14).withMinute(30);
-        CharSequence line = EventFormatter.format(format, getString(R.string.preview_sample_title), sample,
-                nameColor, dateColor, Locale.getDefault());
-        previewText.setText(line);
-        previewText.setMaxLines(EventFormatter.countLines(line));
-        previewText.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSp);
+        // Today's sample sits above the other one, the order the two would appear in on the widget.
+        previewTextToday.setVisibility(useTodayFormat ? View.VISIBLE : View.GONE);
+        if (useTodayFormat) {
+            renderSample(previewTextToday, todayFormat, ZonedDateTime.now().withHour(9).withMinute(0));
+        }
+        renderSample(previewText, format, ZonedDateTime.now().plusDays(1).withHour(14).withMinute(30));
         fontSizeValue.setText(Math.round(fontSizeSp) + "sp");
+    }
+
+    private void renderSample(TextView target, String pattern, ZonedDateTime sample) {
+        CharSequence line = EventFormatter.format(pattern, getString(R.string.preview_sample_title), sample,
+                nameColor, dateColor, Locale.getDefault());
+        target.setText(line);
+        target.setMaxLines(EventFormatter.countLines(line));
+        target.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSp);
     }
 
     private int clampProgress(int progress) {
@@ -262,6 +291,8 @@ public final class WidgetConfigureActivity extends Activity {
         WidgetPrefs.Settings toSave = new WidgetPrefs.Settings(nameColor, dateColor, backgroundColor,
                 cornerRadiusDp, fontSizeSp,
                 format == null || format.isEmpty() ? WidgetPrefs.DEFAULT_FORMAT : format,
+                useTodayFormat,
+                todayFormat == null || todayFormat.isEmpty() ? WidgetPrefs.DEFAULT_TODAY_FORMAT : todayFormat,
                 useCalendarColorForName, useCalendarColorForDate, showEmptyText, lookaheadDays, maxEvents);
         WidgetPrefs.save(this, appWidgetId, toSave);
 
@@ -284,6 +315,17 @@ public final class WidgetConfigureActivity extends Activity {
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
+        }
+    }
+
+    /** Likewise for the format fields, which only care about the settled text. */
+    private abstract static class EditListener implements TextWatcher {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
         }
     }
 }

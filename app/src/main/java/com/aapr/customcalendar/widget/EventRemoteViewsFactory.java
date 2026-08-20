@@ -45,7 +45,7 @@ public final class EventRemoteViewsFactory implements RemoteViewsService.RemoteV
                 : new ArrayList<>();
         // Every path that reloads the list ends up here, which makes this the one place that
         // always knows when the list next goes stale on its own.
-        EventExpiryAlarm.schedule(context, appWidgetId, events);
+        EventExpiryAlarm.schedule(context, appWidgetId, events, settings.useTodayFormat);
     }
 
     @Override
@@ -54,7 +54,7 @@ public final class EventRemoteViewsFactory implements RemoteViewsService.RemoteV
         int nameColor = settings.useCalendarColorForName ? event.getDisplayColor() : settings.nameColor;
         int dateColor = settings.useCalendarColorForDate ? event.getDisplayColor() : settings.dateColor;
         RemoteViews row = new RemoteViews(context.getPackageName(), R.layout.widget_list_item);
-        CharSequence line = EventFormatter.format(settings.format, event.getTitle(),
+        CharSequence line = EventFormatter.format(settings.formatFor(event.getStart()), event.getTitle(),
                 event.getStart(), nameColor, dateColor, Locale.getDefault());
         row.setTextViewText(R.id.event_line, line);
         // Cap the row at the number of lines the format asks for, so a long title is

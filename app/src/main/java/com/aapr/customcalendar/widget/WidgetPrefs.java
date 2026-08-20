@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+
 public final class WidgetPrefs {
 
     private static final String PREFS_NAME = "widget_prefs";
@@ -13,6 +16,9 @@ public final class WidgetPrefs {
     public static final int DEFAULT_BACKGROUND_COLOR = Color.parseColor("#CC000000");
     public static final float DEFAULT_FONT_SIZE_SP = 14f;
     public static final String DEFAULT_FORMAT = "%E — %A %d %B, %H:%M";
+    /** {@link #DEFAULT_FORMAT} with the date part replaced by the word it stands in for. */
+    public static final String DEFAULT_TODAY_FORMAT = "%E — Today, %H:%M";
+    public static final boolean DEFAULT_USE_TODAY_FORMAT = false;
     public static final boolean DEFAULT_USE_CALENDAR_COLOR = false;
     public static final boolean DEFAULT_SHOW_EMPTY_TEXT = true;
     public static final int DEFAULT_LOOKAHEAD_DAYS = 14;
@@ -47,6 +53,8 @@ public final class WidgetPrefs {
         public final int cornerRadiusDp;
         public final float fontSizeSp;
         public final String format;
+        public final boolean useTodayFormat;
+        public final String todayFormat;
         public final boolean useCalendarColorForName;
         public final boolean useCalendarColorForDate;
         public final boolean showEmptyText;
@@ -54,7 +62,7 @@ public final class WidgetPrefs {
         public final int maxEvents;
 
         public Settings(int nameColor, int dateColor, int backgroundColor, int cornerRadiusDp,
-                         float fontSizeSp, String format,
+                         float fontSizeSp, String format, boolean useTodayFormat, String todayFormat,
                          boolean useCalendarColorForName, boolean useCalendarColorForDate,
                          boolean showEmptyText, int lookaheadDays, int maxEvents) {
             this.nameColor = nameColor;
@@ -63,6 +71,8 @@ public final class WidgetPrefs {
             this.cornerRadiusDp = Math.max(0, Math.min(MAX_CORNER_RADIUS_DP, cornerRadiusDp));
             this.fontSizeSp = fontSizeSp;
             this.format = format;
+            this.useTodayFormat = useTodayFormat;
+            this.todayFormat = todayFormat;
             this.useCalendarColorForName = useCalendarColorForName;
             this.useCalendarColorForDate = useCalendarColorForDate;
             this.showEmptyText = showEmptyText;
@@ -73,8 +83,18 @@ public final class WidgetPrefs {
         public static Settings defaults() {
             return new Settings(DEFAULT_NAME_COLOR, DEFAULT_DATE_COLOR, DEFAULT_BACKGROUND_COLOR,
                     DEFAULT_CORNER_RADIUS_DP, DEFAULT_FONT_SIZE_SP, DEFAULT_FORMAT,
+                    DEFAULT_USE_TODAY_FORMAT, DEFAULT_TODAY_FORMAT,
                     DEFAULT_USE_CALENDAR_COLOR, DEFAULT_USE_CALENDAR_COLOR,
                     DEFAULT_SHOW_EMPTY_TEXT, DEFAULT_LOOKAHEAD_DAYS, DEFAULT_MAX_EVENTS);
+        }
+
+        /**
+         * The format an event starting at {@code start} is rendered with. All-day events carry a
+         * UTC start so that their date is the one the calendar shows; comparing local dates on
+         * both sides is therefore right for timed and all-day events alike.
+         */
+        public String formatFor(ZonedDateTime start) {
+            return useTodayFormat && start.toLocalDate().equals(LocalDate.now()) ? todayFormat : format;
         }
     }
 
@@ -92,6 +112,8 @@ public final class WidgetPrefs {
                 p.getInt(key("cornerRadius", appWidgetId), d.cornerRadiusDp),
                 p.getFloat(key("fontSize", appWidgetId), d.fontSizeSp),
                 p.getString(key("format", appWidgetId), d.format),
+                p.getBoolean(key("useTodayFormat", appWidgetId), d.useTodayFormat),
+                p.getString(key("todayFormat", appWidgetId), d.todayFormat),
                 p.getBoolean(key("useCalColorName", appWidgetId), d.useCalendarColorForName),
                 p.getBoolean(key("useCalColorDate", appWidgetId), d.useCalendarColorForDate),
                 p.getBoolean(key("showEmptyText", appWidgetId), d.showEmptyText),
@@ -107,6 +129,8 @@ public final class WidgetPrefs {
                 .putInt(key("cornerRadius", appWidgetId), settings.cornerRadiusDp)
                 .putFloat(key("fontSize", appWidgetId), settings.fontSizeSp)
                 .putString(key("format", appWidgetId), settings.format)
+                .putBoolean(key("useTodayFormat", appWidgetId), settings.useTodayFormat)
+                .putString(key("todayFormat", appWidgetId), settings.todayFormat)
                 .putBoolean(key("useCalColorName", appWidgetId), settings.useCalendarColorForName)
                 .putBoolean(key("useCalColorDate", appWidgetId), settings.useCalendarColorForDate)
                 .putBoolean(key("showEmptyText", appWidgetId), settings.showEmptyText)
@@ -123,6 +147,8 @@ public final class WidgetPrefs {
                 .remove(key("cornerRadius", appWidgetId))
                 .remove(key("fontSize", appWidgetId))
                 .remove(key("format", appWidgetId))
+                .remove(key("useTodayFormat", appWidgetId))
+                .remove(key("todayFormat", appWidgetId))
                 .remove(key("useCalColorName", appWidgetId))
                 .remove(key("useCalColorDate", appWidgetId))
                 .remove(key("showEmptyText", appWidgetId))

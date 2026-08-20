@@ -9,19 +9,28 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <FrameLayout
+        <LinearLayout
             android:id="@+id/preview_container"
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:padding="12dp">
 
             <TextView
+                android:id="@+id/preview_text_today"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:ellipsize="end"
+                android:visibility="gone" />
+
+            <TextView
                 android:id="@+id/preview_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end" />
-        </FrameLayout>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/text_permission_banner"
@@ -237,6 +246,41 @@
             android:text="@string/format_helper_text"
             android:textSize="12sp"
             android:layout_marginBottom="16dp" />
+
+        <CheckBox
+            android:id="@+id/checkbox_use_today_format"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_use_today_format"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:id="@+id/group_today_format"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_today_format" />
+
+            <EditText
+                android:id="@+id/edit_today_format"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textVisiblePassword|textNoSuggestions"
+                android:imeOptions="actionDone"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/today_format_helper_text"
+                android:textSize="12sp" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/button_save"
