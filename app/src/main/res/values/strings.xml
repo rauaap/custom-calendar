@@ -9,6 +9,7 @@
     <string name="label_name_color">Event name color</string>
     <string name="label_date_color">Date &amp; text color</string>
     <string name="label_background_color">Widget background</string>
+    <string name="label_corner_radius">Corner radius</string>
     <string name="use_calendar_color">Use calendar color</string>
     <string name="label_show_empty_text">Show \"No upcoming events\" when empty</string>
     <string name="label_lookahead_days">Days to look ahead</string>

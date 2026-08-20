@@ -8,7 +8,7 @@ two widgets on the same home screen can look completely different. There is no
 launcher activity worth opening — the app's only screen just explains how to
 place the widget.
 
-Requires Android 8.0 (API 26) or newer and calendar read access.
+Requires Android 12 (API 31) or newer and calendar read access.
 
 ## Adding the widget
 
@@ -34,6 +34,7 @@ event, so you can see the result before saving.
 | **Date & text color** | Color of everything that is *not* `%E`: date output, literal text, punctuation. |
 | Date & text → **Use calendar color** | Same as above, for the non-name part of the line. |
 | **Widget background** | Fill behind the event list. Alpha is supported, so a translucent or fully transparent background works. |
+| **Corner radius** | Rounds the widget, 0–48 dp (default 0, i.e. square). The event list is clipped to the same shape, so rows follow the corners instead of spilling past them. |
 | **Days to look ahead** | How far into the future events are pulled, 1–365 days (default 14). |
 | **Maximum events shown** | Row cap, 1–100 (default 20). The list scrolls, so more rows than fit is fine. |
 | **Show "No upcoming events" when empty** | Off leaves the widget blank when there is nothing to show. The "Tap to grant calendar access" message is unaffected — it appears either way. |
@@ -166,6 +167,10 @@ make install                       # adb install -r the debug APK
 
 ## Notes
 
+- **Android 12 (API 31) is the floor** because of the corner radius:
+  `RemoteViews.setViewOutlinePreferredRadius()` is the only way to give a widget
+  an arbitrary corner radius, and it does not exist before then. Everything else
+  in the app would run on API 26.
 - **Container-only by design.** There is no Gradle wrapper (`gradlew`); the
   pinned Gradle version lives solely in the `Containerfile`. Build through
   `make`, not on the host.

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.content.Intent;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -35,6 +36,7 @@ public final class WidgetConfigureActivity extends Activity {
     private int nameColor;
     private int dateColor;
     private int backgroundColor;
+    private int cornerRadiusDp;
     private float fontSizeSp;
     private String format;
     private boolean useCalendarColorForName;
@@ -51,6 +53,8 @@ public final class WidgetConfigureActivity extends Activity {
     private CheckBox nameCalendarColorCheckbox;
     private CheckBox dateCalendarColorCheckbox;
     private CheckBox showEmptyTextCheckbox;
+    private SeekBar cornerRadiusSeekBar;
+    private TextView cornerRadiusValue;
     private SeekBar fontSeekBar;
     private TextView fontSizeValue;
     private EditText formatEdit;
@@ -89,6 +93,8 @@ public final class WidgetConfigureActivity extends Activity {
         nameCalendarColorCheckbox = findViewById(R.id.checkbox_name_calendar_color);
         dateCalendarColorCheckbox = findViewById(R.id.checkbox_date_calendar_color);
         showEmptyTextCheckbox = findViewById(R.id.checkbox_show_empty_text);
+        cornerRadiusSeekBar = findViewById(R.id.seekbar_corner_radius);
+        cornerRadiusValue = findViewById(R.id.text_corner_radius_value);
         fontSeekBar = findViewById(R.id.seekbar_font_size);
         fontSizeValue = findViewById(R.id.text_font_size_value);
         formatEdit = findViewById(R.id.edit_format);
@@ -100,6 +106,7 @@ public final class WidgetConfigureActivity extends Activity {
         nameColor = settings.nameColor;
         dateColor = settings.dateColor;
         backgroundColor = settings.backgroundColor;
+        cornerRadiusDp = settings.cornerRadiusDp;
         fontSizeSp = settings.fontSizeSp;
         format = settings.format;
         useCalendarColorForName = settings.useCalendarColorForName;
@@ -109,6 +116,8 @@ public final class WidgetConfigureActivity extends Activity {
         nameSwatch.setColor(nameColor);
         dateSwatch.setColor(dateColor);
         backgroundSwatch.setColor(backgroundColor);
+        cornerRadiusSeekBar.setMax(WidgetPrefs.MAX_CORNER_RADIUS_DP);
+        cornerRadiusSeekBar.setProgress(cornerRadiusDp);
         fontSeekBar.setProgress(clampProgress(Math.round(fontSizeSp) - MIN_FONT_SP));
         formatEdit.setText(format);
         lookaheadDaysEdit.setText(String.valueOf(settings.lookaheadDays));
@@ -146,19 +155,19 @@ public final class WidgetConfigureActivity extends Activity {
 
         showEmptyTextCheckbox.setOnCheckedChangeListener((buttonView, checked) -> showEmptyText = checked);
 
-        fontSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        cornerRadiusSeekBar.setOnSeekBarChangeListener(new ProgressListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                cornerRadiusDp = progress;
+                updatePreview();
+            }
+        });
+
+        fontSeekBar.setOnSeekBarChangeListener(new ProgressListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 fontSizeSp = progress + MIN_FONT_SP;
                 updatePreview();
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
 
@@ -217,7 +226,15 @@ public final class WidgetConfigureActivity extends Activity {
     }
 
     private void updatePreview() {
-        previewContainer.setBackgroundColor(backgroundColor);
+        // The widget reaches this shape by clipping to an outline; outside RemoteViews a rounded
+        // drawable is the direct route to the same thing.
+        GradientDrawable previewBackground = new GradientDrawable();
+        previewBackground.setColor(backgroundColor);
+        previewBackground.setCornerRadius(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                cornerRadiusDp, getResources().getDisplayMetrics()));
+        previewContainer.setBackground(previewBackground);
+        cornerRadiusValue.setText(cornerRadiusDp + "dp");
+
         ZonedDateTime sample = ZonedDateTime.now().plusDays(1).withHour(14).withMinute(30);
         CharSequence line = EventFormatter.format(format, getString(R.string.preview_sample_title), sample,
                 nameColor, dateColor, Locale.getDefault());
@@ -242,7 +259,8 @@ public final class WidgetConfigureActivity extends Activity {
         int maxEvents = WidgetPrefs.clampCount(maxEventsEdit.getText().toString(),
                 WidgetPrefs.MIN_MAX_EVENTS, WidgetPrefs.MAX_MAX_EVENTS, WidgetPrefs.DEFAULT_MAX_EVENTS);
 
-        WidgetPrefs.Settings toSave = new WidgetPrefs.Settings(nameColor, dateColor, backgroundColor, fontSizeSp,
+        WidgetPrefs.Settings toSave = new WidgetPrefs.Settings(nameColor, dateColor, backgroundColor,
+                cornerRadiusDp, fontSizeSp,
                 format == null || format.isEmpty() ? WidgetPrefs.DEFAULT_FORMAT : format,
                 useCalendarColorForName, useCalendarColorForDate, showEmptyText, lookaheadDays, maxEvents);
         WidgetPrefs.save(this, appWidgetId, toSave);
@@ -256,5 +274,16 @@ public final class WidgetConfigureActivity extends Activity {
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         setResult(RESULT_OK, resultValue);
         finish();
+    }
+
+    /** Spares the sliders the two touch callbacks neither of them has anything to do in. */
+    private abstract static class ProgressListener implements SeekBar.OnSeekBarChangeListener {
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+        }
     }
 }

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.CalendarContract;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -104,6 +105,12 @@ public final class CustomCalendarWidgetProvider extends AppWidgetProvider {
         WidgetPrefs.Settings settings = WidgetPrefs.load(context, appWidgetId);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
         views.setInt(R.id.widget_root, "setBackgroundColor", settings.backgroundColor);
+        // setViewOutlinePreferredRadius only installs the outline provider; a view ignores its
+        // outline until told to clip to it, so the corners stay square without the second call.
+        // Clipping applies to the list too, which keeps rows from spilling into a rounded corner.
+        views.setViewOutlinePreferredRadius(R.id.widget_root, settings.cornerRadiusDp,
+                TypedValue.COMPLEX_UNIT_DIP);
+        views.setBoolean(R.id.widget_root, "setClipToOutline", true);
 
         if (CalendarEventRepository.hasPermission(context)) {
             Intent serviceIntent = new Intent(context, EventListRemoteViewsService.class);

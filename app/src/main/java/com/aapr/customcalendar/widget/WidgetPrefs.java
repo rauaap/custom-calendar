@@ -17,11 +17,14 @@ public final class WidgetPrefs {
     public static final boolean DEFAULT_SHOW_EMPTY_TEXT = true;
     public static final int DEFAULT_LOOKAHEAD_DAYS = 14;
     public static final int DEFAULT_MAX_EVENTS = 20;
+    /** Square, i.e. what every widget looked like before the radius was configurable. */
+    public static final int DEFAULT_CORNER_RADIUS_DP = 0;
 
     public static final int MIN_LOOKAHEAD_DAYS = 1;
     public static final int MAX_LOOKAHEAD_DAYS = 365;
     public static final int MIN_MAX_EVENTS = 1;
     public static final int MAX_MAX_EVENTS = 100;
+    public static final int MAX_CORNER_RADIUS_DP = 48;
 
     private WidgetPrefs() {
     }
@@ -41,6 +44,7 @@ public final class WidgetPrefs {
         public final int nameColor;
         public final int dateColor;
         public final int backgroundColor;
+        public final int cornerRadiusDp;
         public final float fontSizeSp;
         public final String format;
         public final boolean useCalendarColorForName;
@@ -49,12 +53,14 @@ public final class WidgetPrefs {
         public final int lookaheadDays;
         public final int maxEvents;
 
-        public Settings(int nameColor, int dateColor, int backgroundColor, float fontSizeSp, String format,
+        public Settings(int nameColor, int dateColor, int backgroundColor, int cornerRadiusDp,
+                         float fontSizeSp, String format,
                          boolean useCalendarColorForName, boolean useCalendarColorForDate,
                          boolean showEmptyText, int lookaheadDays, int maxEvents) {
             this.nameColor = nameColor;
             this.dateColor = dateColor;
             this.backgroundColor = backgroundColor;
+            this.cornerRadiusDp = Math.max(0, Math.min(MAX_CORNER_RADIUS_DP, cornerRadiusDp));
             this.fontSizeSp = fontSizeSp;
             this.format = format;
             this.useCalendarColorForName = useCalendarColorForName;
@@ -66,7 +72,8 @@ public final class WidgetPrefs {
 
         public static Settings defaults() {
             return new Settings(DEFAULT_NAME_COLOR, DEFAULT_DATE_COLOR, DEFAULT_BACKGROUND_COLOR,
-                    DEFAULT_FONT_SIZE_SP, DEFAULT_FORMAT, DEFAULT_USE_CALENDAR_COLOR, DEFAULT_USE_CALENDAR_COLOR,
+                    DEFAULT_CORNER_RADIUS_DP, DEFAULT_FONT_SIZE_SP, DEFAULT_FORMAT,
+                    DEFAULT_USE_CALENDAR_COLOR, DEFAULT_USE_CALENDAR_COLOR,
                     DEFAULT_SHOW_EMPTY_TEXT, DEFAULT_LOOKAHEAD_DAYS, DEFAULT_MAX_EVENTS);
         }
     }
@@ -82,6 +89,7 @@ public final class WidgetPrefs {
                 p.getInt(key("nameColor", appWidgetId), d.nameColor),
                 p.getInt(key("dateColor", appWidgetId), d.dateColor),
                 p.getInt(key("bgColor", appWidgetId), d.backgroundColor),
+                p.getInt(key("cornerRadius", appWidgetId), d.cornerRadiusDp),
                 p.getFloat(key("fontSize", appWidgetId), d.fontSizeSp),
                 p.getString(key("format", appWidgetId), d.format),
                 p.getBoolean(key("useCalColorName", appWidgetId), d.useCalendarColorForName),
@@ -96,6 +104,7 @@ public final class WidgetPrefs {
                 .putInt(key("nameColor", appWidgetId), settings.nameColor)
                 .putInt(key("dateColor", appWidgetId), settings.dateColor)
                 .putInt(key("bgColor", appWidgetId), settings.backgroundColor)
+                .putInt(key("cornerRadius", appWidgetId), settings.cornerRadiusDp)
                 .putFloat(key("fontSize", appWidgetId), settings.fontSizeSp)
                 .putString(key("format", appWidgetId), settings.format)
                 .putBoolean(key("useCalColorName", appWidgetId), settings.useCalendarColorForName)
@@ -111,6 +120,7 @@ public final class WidgetPrefs {
                 .remove(key("nameColor", appWidgetId))
                 .remove(key("dateColor", appWidgetId))
                 .remove(key("bgColor", appWidgetId))
+                .remove(key("cornerRadius", appWidgetId))
                 .remove(key("fontSize", appWidgetId))
                 .remove(key("format", appWidgetId))
                 .remove(key("useCalColorName", appWidgetId))
