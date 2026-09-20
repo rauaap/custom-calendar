@@ -120,8 +120,10 @@ other event uses the main one.
 ## What the widget shows
 
 - Events starting within the configured lookahead window (14 days by default),
-  across all calendars on the device, earliest first, capped at the configured
-  row limit (20 by default).
+  across visible calendars on the device, earliest first, capped at the configured
+  row limit (20 by default). Calendars marked hidden in Android's calendar provider
+  are excluded. Calendar apps that keep their visibility settings private cannot
+  share those settings with the widget.
 - All-day events are rendered in UTC so their date is not shifted by the local
   time zone.
 - Tapping a row opens that event in the calendar app; tapping the widget

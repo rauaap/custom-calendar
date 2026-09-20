@@ -47,9 +47,13 @@ public final class CalendarEventRepository {
                 CalendarContract.Instances.ALL_DAY,
                 CalendarContract.Instances.DISPLAY_COLOR,
         };
+        // Respect calendar visibility before applying the event limit.
+        String selection = CalendarContract.Instances.VISIBLE + " = ?";
+        String[] selectionArgs = {"1"};
         String sortOrder = CalendarContract.Instances.BEGIN + " ASC";
 
-        Cursor cursor = context.getContentResolver().query(uri, projection, null, null, sortOrder);
+        Cursor cursor = context.getContentResolver().query(
+                uri, projection, selection, selectionArgs, sortOrder);
         if (cursor == null) {
             return events;
         }
